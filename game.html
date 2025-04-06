@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Retro Pong Game</title>
+  <title>Ping Pong Game</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
@@ -179,8 +179,9 @@
     let rightScore = 0;
     const scoreDisplay = document.getElementById('score');
     const winnerDisplay = document.getElementById('winner');
-    const winningScore = 5;
+    const winningScore = 10;
     let isPaused = false;
+    let isGameOver = false;
 
     function collides(a, b) {
       return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
@@ -200,6 +201,7 @@
         winnerDisplay.textContent = `${leftScore > rightScore ? player1 : player2} Wins!`;
         ball.dx = 0;
         ball.dy = 0;
+        isGameOver = true;
         showGameOverScreen();
       }
     }
@@ -225,6 +227,7 @@
       resetBall();
       document.getElementById('gameOverScreen').style.display = 'none';
       isPaused = false;
+      isGameOver = false;
       document.getElementById('pauseButton').textContent = 'Pause';
     }
 
@@ -247,8 +250,10 @@
 
     const pauseButton = document.getElementById('pauseButton');
     pauseButton.addEventListener('click', () => {
-      isPaused = !isPaused;
-      pauseButton.textContent = isPaused ? 'Resume' : 'Pause';
+      if (!isGameOver) {
+        isPaused = !isPaused;
+        pauseButton.textContent = isPaused ? 'Resume' : 'Pause';
+      }
     });
 
     const speedSlider = document.getElementById('speedSlider');
@@ -299,7 +304,7 @@
     });
 
     function loop() {
-      if (!isPaused) {
+      if (!isPaused && !isGameOver) {
         requestAnimationFrame(loop);
         context.clearRect(0, 0, canvas.width, canvas.height);
 
