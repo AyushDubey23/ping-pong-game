@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Pong Game - Select Mode</title>
+  <title>Pong Game - Retro Select Mode</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
-      color: white;
+      font-family: 'Press Start 2P', cursive;
+      background: #1d1f21;
+      color: #0F0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -31,9 +31,9 @@
     }
     .particle {
       position: absolute;
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(0, 255, 0, 0.7);
       border-radius: 50%;
-      animation: particleAnimation 3s linear infinite;
+      animation: particleAnimation 4s linear infinite;
     }
     @keyframes particleAnimation {
       0% { transform: translateY(0) scale(0.5); opacity: 0; }
@@ -41,12 +41,13 @@
       100% { transform: translateY(-100vh) scale(1); opacity: 0; }
     }
     .container {
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+      background-color: rgba(0, 0, 0, 0.9);
+      padding: 20px;
+      border: 5px solid #0F0;
+      border-radius: 10px;
+      box-shadow: 0 15px 30px rgba(0, 255, 0, 0.7), inset 0 0 10px rgba(0, 255, 0, 0.5);
       text-align: center;
-      width: 340px;
+      width: 360px;
       position: relative;
       z-index: 1;
       transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
@@ -54,12 +55,13 @@
     }
     .container:hover {
       transform: perspective(1000px) rotateX(10deg) rotateY(10deg);
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 20px 40px rgba(0, 255, 0, 0.8), inset 0 0 15px rgba(0, 255, 0, 0.6);
     }
     h2 {
-      font-size: 2.5em;
+      font-size: 2em;
       margin-bottom: 20px;
       animation: fadeInDown 1s ease;
+      text-shadow: 2px 2px #000;
     }
     @keyframes fadeInDown {
       0% { opacity: 0; transform: translateY(-20px); }
@@ -69,30 +71,27 @@
       width: 100%;
       padding: 15px;
       margin: 15px 0;
-      border: none;
-      border-radius: 10px;
+      border: 3px solid #0F0;
+      border-radius: 5px;
       font-size: 18px;
       box-sizing: border-box;
-    }
-    input, select {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      transition: background 0.3s ease;
+      background: rgba(0, 0, 0, 0.6);
+      color: #0F0;
     }
     input:focus, select:focus {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.8);
       outline: none;
     }
     button {
-      background: #ff6f61;
-      color: white;
+      background: #0F0;
+      color: #1d1f21;
       cursor: pointer;
       transition: background 0.3s ease;
       position: relative;
       overflow: hidden;
     }
     button:hover {
-      background: #ff5252;
+      background: #0FF;
     }
     button::after {
       content: '';
@@ -101,7 +100,7 @@
       left: 50%;
       width: 5px;
       height: 5px;
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(0, 0, 0, 0.5);
       opacity: 0;
       border-radius: 50%;
       transform: scale(1) translate(-50%, -50%);
@@ -129,8 +128,9 @@
     .icon {
       font-size: 2em;
       margin-bottom: 10px;
-      color: #ff6f61;
+      color: #0F0;
       animation: iconBounce 2s infinite;
+      text-shadow: 2px 2px #000;
     }
     @keyframes iconBounce {
       0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
@@ -142,12 +142,12 @@
       top: 10px;
       right: 10px;
       font-size: 1.5em;
-      color: #ff6f61;
+      color: #0F0;
       cursor: pointer;
       transition: color 0.3s ease;
     }
     .info-button:hover {
-      color: #ff5252;
+      color: #0FF;
     }
     .info-modal {
       display: none;
@@ -155,10 +155,10 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background-color: rgba(0, 0, 0, 0.9);
+      background-color: rgba(0, 0, 0, 0.95);
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 5px 15px rgba(0, 255, 0, 0.5);
       z-index: 2;
     }
     .info-modal.active {
@@ -169,12 +169,46 @@
       top: 10px;
       right: 10px;
       font-size: 1.5em;
-      color: #ff6f61;
+      color: #0F0;
       cursor: pointer;
       transition: color 0.3s ease;
     }
     .close-button:hover {
-      color: #ff5252;
+      color: #0FF;
+    }
+    .recommendation-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.95);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 255, 0, 0.5);
+      z-index: 2;
+    }
+    .recommendation-modal.active {
+      display: block;
+    }
+    .recommendation-modal h3 {
+      margin-bottom: 20px;
+    }
+    .recommendation-modal input, .recommendation-modal textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 3px solid #0F0;
+      border-radius: 5px;
+      background: rgba(0, 0, 0, 0.6);
+      color: #0F0;
+      font-size: 18px;
+      box-sizing: border-box;
+      transition: background 0.3s ease;
+    }
+    .recommendation-modal input:focus, .recommendation-modal textarea:focus {
+      background: rgba(0, 0, 0, 0.8);
+      outline: none;
     }
   </style>
 </head>
@@ -217,11 +251,17 @@
       <p>Computer Science Student</p>
       <p>Madan Mohan Malaviya University of Technology</p>
       <h3>About This Website</h3>
-      <p>This website allows you to play the classic Pong game in two modes:</p>
-      <ul>
-        <li><strong>Player vs Computer:</strong> Compete against the AI with adjustable difficulty levels.</li>
-        <li><strong>Player vs Player:</strong> Challenge a friend in a local multiplayer match.</li>
-      </ul>
+      <p>This website allows you to play the classic Ping Pong game </p>
+
+
+    <button id="recommendationButton">Give Recommendations</button>
+
+    <div class="recommendation-modal" id="recommendationModal">
+      <i class="fas fa-times close-button" onclick="toggleRecommendationModal()"></i>
+      <h3>Your Recommendations</h3>
+      <input type="text" id="userName" placeholder="Your Name" required aria-label="Your Name">
+      <textarea id="recommendationText" placeholder="Enter your recommendations here..."></textarea>
+      <button onclick="submitRecommendation()">Submit</button>
     </div>
   </div>
 
@@ -230,6 +270,8 @@
     const nameFields = document.getElementById('nameFields');
     const difficultySelect = document.getElementById('difficultySelect');
     const infoModal = document.getElementById('infoModal');
+    const recommendationModal = document.getElementById('recommendationModal');
+    const recommendationButton = document.getElementById('recommendationButton');
 
     modeSelect.addEventListener('change', () => {
       nameFields.classList.toggle('active', modeSelect.value === 'pvp');
@@ -267,6 +309,23 @@
 
     function toggleInfoModal() {
       infoModal.classList.toggle('active');
+    }
+
+    function toggleRecommendationModal() {
+      recommendationModal.classList.toggle('active');
+    }
+
+    recommendationButton.addEventListener('click', toggleRecommendationModal);
+
+    function submitRecommendation() {
+      const userName = document.getElementById('userName').value.trim();
+      const recommendationText = document.getElementById('recommendationText').value.trim();
+      if (userName && recommendationText) {
+        alert('Thank you for your recommendations, ' + userName + '!');
+        location.reload();
+      } else {
+        alert('Please enter your name and recommendations before submitting.');
+      }
     }
   </script>
 </body>
