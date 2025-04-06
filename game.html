@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Retro Pong Game</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: linear-gradient(135deg, #ff7e5f, #feb47b);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-family: 'VT323', monospace;
+    }
+
+    #gameContainer {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #game {
+      border: 5px solid #ffffff;
+      background-color: #1b1b1b;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+      border-radius: 15px;
+    }
+
+    .scoreboard {
+      margin-bottom: 10px;
+      font-size: 32px;
+      letter-spacing: 3px;
+      animation: fadeIn 2s;
+      font-family: 'Press Start 2P', cursive;
+      color: #ffeb3b;
+      text-shadow: 2px 2px #ff5f6d;
+    }
+
+    .winner {
+      font-size: 36px;
+      color: #ff5f6d;
+      margin-top: 10px;
+      animation: blink 1s infinite;
+      text-shadow: 2px 2px #ffeb3b;
+    }
+
+    .game-over {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-top: 10px;
+    }
+
+    #pauseButton {
+      padding: 12px 24px;
+      background-color: #ff5f6d;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.3s, transform 0.3s;
+      box-shadow: 0 4px #ff1e56;
+    }
+
+    #pauseButton:hover {
+      background-color: #ff405a;
+      transform: translateY(2px);
+    }
+
+    #pauseButton:active {
+      box-shadow: 0 2px #ff1e56;
+      transform: translateY(4px);
+    }
+
+    #speedSlider {
+      width: 150px;
+      accent-color: #ffeb3b;
+    }
+
+    #colorblindMode {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer">
+    <div class="scoreboard">
+      <div id="score">0 - 0</div>
+      <div id="winner" class="winner"></div>
+    </div>
+    <canvas width="750" height="585" id="game"></canvas>
+    <div id="controls">
+      <button id="pauseButton">Pause</button>
+      <label for="speedSlider">Game Speed:</label>
+      <input type="range" id="speedSlider" min="1" max="3" step="1" value="2">
+      <label id="colorblindMode">
+        <input type="checkbox" id="colorblindToggle"> Colorblind Mode
+      </label>
+    </div>
+    <div id="gameOverScreen" class="game-over">
+      <h2>Game Over</h2>
+      <p>Final Score: <span id="finalScore"></span></p>
+      <button onclick="restartGame()">Restart</button>
+    </div>
+  </div>
+
+  <audio id="hitSound" src="hit.wav"></audio>
+  <audio id="scoreSound" src="score.wav"></audio>
+  <audio id="winSound" src="win.wav"></audio>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode') || 'cpu';
+    const player1 = urlParams.get('p1') || 'Player 1';
+    const player2 = mode === 'pvp' ? (urlParams.get('p2') || 'Player 2') : 'Computer';
+
+    const canvas = document.getElementById('game');
+    const context = canvas.getContext('2d');
+
+    const grid = 15;
+    const paddleHeight = grid * 5;
+    const maxPaddleY = canvas.height - grid - paddleHeight;
+    let paddleSpeed = 6;
+    let ballSpeed = 5;
+
+    const leftPaddle = { x: grid * 2, y: canvas.height / 2 - paddleHeight / 2, width: grid, height: paddleHeight, dy: 0 };
+    const rightPaddle = { x: canvas.width - grid * 3, y: canvas.height / 2 - paddleHeight / 2, width: grid, height: paddleHeight, dy: 0 };
+    const ball = { x: canvas.width / 2, y: canvas.height / 2, width: grid, height: grid, dx: ballSpeed, dy: -ballSpeed, resetting: false };
+
+    let leftScore = 0;
+    let rightScore = 0;
+    const scoreDisplay = document.getElementById('score');
+    const winnerDisplay = document.getElementById('winner');
+    const winningScore = 5;
+    let isPaused = false;
+
+    function collides(a, b) {
+      return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    }
+
+    function resetBall() {
+      ball.resetting = true;
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.dx = ballSpeed * (Math.random() > 0.5 ? 1 : -1);
+      ball.dy = ballSpeed * (Math.random() > 0.5 ? 1 : -1);
+      setTimeout(() => ball.resetting = false, 500);
+    }
+
+    function checkWin() {
+      if (leftScore >= winningScore || rightScore >= winningScore) {
+        winnerDisplay.textContent = `${leftScore > rightScore ? player1 : player2} Wins!`;
+        ball.dx = 0;
+        ball.dy = 0;
+        showGameOverScreen();
+      }
+    }
+
+    function playSound(soundId) {
+      const sound = document.getElementById(soundId);
+      sound.currentTime = 0;
+      sound.play();
+    }
+
+    function showGameOverScreen() {
+      const gameOverScreen = document.getElementById('gameOverScreen');
+      const finalScore = document.getElementById('finalScore');
+      finalScore.textContent = `${leftScore} - ${rightScore}`;
+      gameOverScreen.style.display = 'block';
+    }
+
+    function restartGame() {
+      leftScore = 0;
+      rightScore = 0;
+      scoreDisplay.textContent = '0 - 0';
+      winnerDisplay.textContent = '';
+      resetBall();
+      document.getElementById('gameOverScreen').style.display = 'none';
+      isPaused = false;
+      document.getElementById('pauseButton').textContent = 'Pause';
+    }
+
+    function updateAIDifficulty(difficulty) {
+      switch (difficulty) {
+        case 'easy':
+          paddleSpeed = 4;
+          break;
+        case 'medium':
+          paddleSpeed = 6;
+          break;
+        case 'hard':
+          paddleSpeed = 8;
+          break;
+      }
+    }
+
+    const difficulty = urlParams.get('difficulty') || 'medium';
+    updateAIDifficulty(difficulty);
+
+    const pauseButton = document.getElementById('pauseButton');
+    pauseButton.addEventListener('click', () => {
+      isPaused = !isPaused;
+      pauseButton.textContent = isPaused ? 'Resume' : 'Pause';
+    });
+
+    const speedSlider = document.getElementById('speedSlider');
+    speedSlider.addEventListener('input', () => {
+      const speedMultiplier = speedSlider.value;
+      ballSpeed = 5 * speedMultiplier;
+      paddleSpeed = 6 * speedMultiplier;
+    });
+
+    const colorblindToggle = document.getElementById('colorblindToggle');
+    colorblindToggle.addEventListener('change', () => {
+      if (colorblindToggle.checked) {
+        document.documentElement.style.setProperty('--paddle-color', 'blue');
+        document.documentElement.style.setProperty('--ball-color', 'yellow');
+      } else {
+        document.documentElement.style.setProperty('--paddle-color', 'white');
+        document.documentElement.style.setProperty('--ball-color', 'white');
+      }
+    });
+
+    canvas.addEventListener('touchstart', e => {
+      const touch = e.touches[0];
+      if (touch.clientX < canvas.width / 2) leftPaddle.dy = -paddleSpeed;
+      else rightPaddle.dy = -paddleSpeed;
+    });
+
+    canvas.addEventListener('touchmove', e => {
+      const touch = e.touches[0];
+      if (touch.clientX < canvas.width / 2) leftPaddle.dy = -paddleSpeed;
+      else rightPaddle.dy = -paddleSpeed;
+    });
+
+    canvas.addEventListener('touchend', () => {
+      leftPaddle.dy = 0;
+      rightPaddle.dy = 0;
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.which === 38) rightPaddle.dy = -paddleSpeed;
+      else if (e.which === 40) rightPaddle.dy = paddleSpeed;
+      else if (e.which === 87) leftPaddle.dy = -paddleSpeed;
+      else if (e.which === 83) leftPaddle.dy = paddleSpeed;
+    });
+
+    document.addEventListener('keyup', e => {
+      if (e.which === 38 || e.which === 40) rightPaddle.dy = 0;
+      if (e.which === 87 || e.which === 83) leftPaddle.dy = 0;
+    });
+
+    function loop() {
+      if (!isPaused) {
+        requestAnimationFrame(loop);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // move paddles
+        leftPaddle.y += leftPaddle.dy;
+        rightPaddle.y += rightPaddle.dy;
+
+        if (leftPaddle.y < grid) leftPaddle.y = grid;
+        else if (leftPaddle.y > maxPaddleY) leftPaddle.y = maxPaddleY;
+        if (rightPaddle.y < grid) rightPaddle.y = grid;
+        else if (rightPaddle.y > maxPaddleY) rightPaddle.y = maxPaddleY;
+
+        // CPU movement
+        if (mode === 'cpu') {
+          if (ball.dy > 0 && ball.y > rightPaddle.y + rightPaddle.height / 2) rightPaddle.dy = paddleSpeed * 0.6;
+          else if (ball.dy < 0 && ball.y < rightPaddle.y + rightPaddle.height / 2) rightPaddle.dy = -paddleSpeed * 0.6;
+          else rightPaddle.dy = 0;
+        }
+
+        // move ball
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+
+        if (ball.y < grid || ball.y + ball.height > canvas.height - grid) {
+          ball.dy *= -1;
+          playSound('hitSound');
+        }
+
+        if ((ball.x < 0 || ball.x > canvas.width) && !ball.resetting) {
+          ball.x < 0 ? rightScore++ : leftScore++;
+          scoreDisplay.textContent = `${leftScore} - ${rightScore}`;
+          playSound('scoreSound');
+          checkWin();
+          resetBall();
+        }
+
+        if (collides(ball, leftPaddle)) {
+          ball.dx = Math.abs(ball.dx);
+          ball.x = leftPaddle.x + leftPaddle.width;
+          playSound('hitSound');
+        } else if (collides(ball, rightPaddle)) {
+          ball.dx = -Math.abs(ball.dx);
+          ball.x = rightPaddle.x - ball.width;
+          playSound('hitSound');
+        }
+
+        // draw
+        context.fillStyle = 'var(--paddle-color)';
+        context.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
+        context.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
+        context.fillStyle = 'var(--ball-color)';
+        context.fillRect(ball.x, ball.y, ball.width, ball.height);
+        context.fillStyle = 'gray';
+        context.fillRect(0, 0, canvas.width, grid);
+        context.fillRect(0, canvas.height - grid, canvas.width, grid);
+        for (let i = grid; i < canvas.height - grid; i += grid * 2) context.fillRect(canvas.width / 2 - grid / 2, i, grid, grid);
+      } else {
+        requestAnimationFrame(loop);
+      }
+    }
+
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
