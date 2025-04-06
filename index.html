@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Pong Game - Retro Select Mode</title>
+  <title>Ping Pong</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -11,7 +11,7 @@
       margin: 0;
       padding: 0;
       font-family: 'Press Start 2P', cursive;
-      background: #1d1f21;
+      background: #000;
       color: #0F0;
       display: flex;
       align-items: center;
@@ -222,6 +222,7 @@
     <i class="fas fa-gamepad icon"></i>
     <h2>Pong Game</h2>
     <select id="mode" aria-label="Select game mode">
+      <option value="">Select Game Mode</option>
       <option value="cpu">Player vs Computer</option>
       <option value="pvp">Player vs Player</option>
     </select>
@@ -253,7 +254,6 @@
       <h3>About This Website</h3>
       <p>This website allows you to play the classic Ping Pong game </p>
 
-
     <button id="recommendationButton">Give Recommendations</button>
 
     <div class="recommendation-modal" id="recommendationModal">
@@ -280,6 +280,11 @@
 
     function startGame() {
       const mode = modeSelect.value;
+      if (!mode) {
+        alert('Please select a game mode.');
+        return;
+      }
+
       let url = `game.html?mode=${mode}`;
 
       if (mode === 'pvp') {
