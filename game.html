@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Retro Pong Game</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
@@ -16,6 +17,22 @@
       justify-content: center;
       color: #ffffff;
       font-family: 'VT323', monospace;
+    }
+
+    @media (orientation: portrait) {
+      body::before {
+        content: "Please rotate your device to landscape mode for the best experience.";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        z-index: 10;
+      }
     }
 
     #gameContainer {
